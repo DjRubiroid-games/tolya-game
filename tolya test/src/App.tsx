@@ -276,10 +276,8 @@ export function App() {
     isMinibossActiveRef.current = false;
     hasSpawnedMinibossRef.current = false;
 
-    // Reset Developer Mode when starting Level 2
-    isDevModeRef.current = false;
-    setIsDevMode(false);
-    console.log('🔄 Developer Mode RESET for Level 2');
+    // Developer Mode now persists between levels
+    console.log('🔄 LEVEL START:', levelIndex, '| Dev Mode:', isDevModeRef.current);
 
     if (levelIndex === 3) {
       console.log('🔄 LEVEL 3 STARTING WITH INTRO...');
@@ -482,7 +480,9 @@ export function App() {
       }
       if (!obs.passed && tolya.x > obs.x + obs.width) {
         obs.passed = true;
-        const points = isDevModeRef.current ? 50 : 1;
+        const points = isDevModeRef.current
+          ? (levelRef.current === 2 ? WIN_SCORE_LVL2 : WIN_SCORE_LVL1)
+          : 1;
         console.log('🎮 Developer Mode:', isDevModeRef.current, '| Points awarded:', points);
 
         const oldScore = scoreRef.current;

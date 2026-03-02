@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RotateCcw, Sparkles, Cloud as CloudIcon, Skull, ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
 import { BedImage, TolyaImage, TreeObject, WinImage } from './components/GameAssets';
 import StartMenu from './components/StartMenu';
+import { VisualNovelScene } from './components/VisualNovelScene';
+import { STORY_DATA } from './data/storyData';
+import { VideoCutscene } from './components/VideoCutscene';
 
 // Game Constants
 const GRAVITY = 0.6;
@@ -74,6 +77,7 @@ export function App() {
   const [level, setLevel] = useState(1);
   const [showLevel2Button, setShowLevel2Button] = useState(false);
   const [showLevel2Intro, setShowLevel2Intro] = useState(false);
+  const [showLevel3Intro, setShowLevel3Intro] = useState(false);
   const [isDevMode, setIsDevMode] = useState(false);
   const [showYappy, setShowYappy] = useState(false);
 
@@ -195,7 +199,7 @@ export function App() {
 
   // Level 2 Transition Timer
   useEffect(() => {
-    if (gameState === 'won' && level === 1) {
+    if (gameState === 'won' && (level === 1 || level === 2)) {
       const timer = setTimeout(() => {
         setShowLevel2Button(true);
       }, 3000);
@@ -276,6 +280,14 @@ export function App() {
     isDevModeRef.current = false;
     setIsDevMode(false);
     console.log('🔄 Developer Mode RESET for Level 2');
+
+    if (levelIndex === 3) {
+      console.log('🔄 LEVEL 3 STARTING WITH INTRO...');
+      setShowLevel3Intro(true);
+      setGameState('playing');
+      gameStateRef.current = 'playing';
+      return;
+    }
 
     if (levelIndex !== 2) {
       gameStateRef.current = 'playing';
@@ -546,6 +558,29 @@ export function App() {
       >
         <div className="relative w-[800px] h-[400px] bg-slate-900 overflow-hidden shadow-2xl rounded-lg border-4 border-slate-700 select-none">
 
+          {/* Level 3: Visual Novel */}
+          {level === 3 && gameState === 'playing' && !showLevel3Intro && (
+            <VisualNovelScene
+              story={STORY_DATA}
+              startNodeId="start"
+              onEnd={(outcome: string) => {
+                if (outcome === 'WIN') setGameState('won');
+                else if (outcome === 'LOST') {
+                  setLossReason('normal');
+                  setGameState('lost');
+                }
+              }}
+            />
+          )}
+
+          {/* Level 3 Intro Video */}
+          {showLevel3Intro && (
+            <VideoCutscene
+              src="./assets/Kreiranje_Videa_sa_Odlaskom_u_Svetlost.mp4"
+              onEnded={() => setShowLevel3Intro(false)}
+            />
+          )}
+
           {/* Start Menu */}
           {gameState === 'menu' && (
             <StartMenu
@@ -723,10 +758,10 @@ export function App() {
 
                   {showLevel2Button && (
                     <button
-                      onClick={() => startLevel(2)}
+                      onClick={() => startLevel(level + 1)}
                       className="flex items-center justify-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-full font-black text-lg hover:bg-indigo-700 transition-all shadow-xl transform active:scale-95 animate-pulse"
                     >
-                      <Sparkles size={20} /> LEVEL 2
+                      <Sparkles size={20} /> {level === 1 ? 'LEVEL 2' : 'ИСТОРИЯ ПРОДОЛЖАЕТСЯ...'}
                     </button>
                   )}
                 </div>
